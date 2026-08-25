@@ -4,6 +4,7 @@ import WorkLog from './components/WorkLog.jsx';
 import EntryForm from './components/EntryForm.jsx';
 import EntryList from './components/EntryList.jsx';
 import Settings from './components/Settings.jsx';
+import AuthNotice from './components/AuthNotice.jsx';
 import { useStore } from './hooks/useStore.jsx';
 import { useNotifications } from './hooks/useNotifications.js';
 import { useAuth } from './hooks/useAuth.jsx';
@@ -160,6 +161,8 @@ export default function App() {
       </header>
 
       <main className="main">
+        <AuthNotice onGoToAccount={() => setTab('settings')} />
+
         {tab === 'dashboard' && <Dashboard onGoToWork={() => setTab('work')} />}
         {tab === 'work' && <WorkLog />}
         {tab === 'ledger' && <LedgerPage />}

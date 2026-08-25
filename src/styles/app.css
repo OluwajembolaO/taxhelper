@@ -320,3 +320,21 @@ code {
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .getapp__download { color: #101513; }
 }
+
+/* Auth notice -------------------------------------------------------------- */
+.authnotice {
+  display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap;
+  margin-bottom: 1rem; padding: 0.9rem 1rem;
+  border: 1px solid var(--rule-strong); border-left-width: 5px;
+  border-radius: var(--radius); background: var(--paper-raised); box-shadow: var(--shadow);
+}
+.authnotice--error   { border-left-color: var(--bad);  background: var(--bad-bg); }
+.authnotice--success { border-left-color: var(--good); background: var(--good-bg); }
+.authnotice__body { flex: 1 1 260px; min-width: 0; }
+.authnotice__title {
+  margin: 0 0 0.2rem; font-family: var(--font-display);
+  font-size: 1rem; font-weight: 700; color: var(--ink);
+}
+.authnotice__detail { margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--ink-soft); }
+.authnotice__actions { display: flex; align-items: center; gap: 0.4rem; margin-left: auto; }
+.authnotice__dismiss { font-size: 1.2rem; line-height: 1; padding: 0.15rem 0.45rem; }

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build && node scripts/build-sw.mjs",
     "preview": "vite preview",
-    "test": "node test/domain.test.mjs && node test/security.test.mjs",
+    "test": "node test/domain.test.mjs && node test/security.test.mjs && node test/auth.test.mjs",
     "verify": "node scripts/verify-supabase.mjs",
     "shots": "node scripts/screenshots.mjs",
     "electron": "npm run build && node scripts/run-desktop.mjs",
