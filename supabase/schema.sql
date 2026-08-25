@@ -127,33 +127,10 @@ begin
 end $$;
 
 -- ─── Storage: proof attachments ────────────────────────────────────────────
--- Private bucket; files are read through short-lived signed URLs only.
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values (
-  'proof', 'proof', false, 10485760,
-  array['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif', 'application/pdf']
-)
-on conflict (id) do update
-  set public = false,
-      file_size_limit = excluded.file_size_limit,
-      allowed_mime_types = excluded.allowed_mime_types;
-
--- Objects are stored at "<user_id>/<attachment_id>", so the first path segment
--- is the ownership check.
-drop policy if exists "proof_own_select" on storage.objects;
-drop policy if exists "proof_own_insert" on storage.objects;
-drop policy if exists "proof_own_update" on storage.objects;
-drop policy if exists "proof_own_delete" on storage.objects;
-
-create policy "proof_own_select" on storage.objects for select to authenticated
-  using (bucket_id = 'proof' and (storage.foldername(name))[1] = auth.uid()::text);
-create policy "proof_own_insert" on storage.objects for insert to authenticated
-  with check (bucket_id = 'proof' and (storage.foldername(name))[1] = auth.uid()::text);
-create policy "proof_own_update" on storage.objects for update to authenticated
-  using (bucket_id = 'proof' and (storage.foldername(name))[1] = auth.uid()::text)
-  with check (bucket_id = 'proof' and (storage.foldername(name))[1] = auth.uid()::text);
-create policy "proof_own_delete" on storage.objects for delete to authenticated
-  using (bucket_id = 'proof' and (storage.foldername(name))[1] = auth.uid()::text);
+-- Moved to supabase/storage.sql. It is a separate script because creating
+-- policies on storage.objects needs table ownership that the SQL editor does
+-- not always have — keeping it separate means a storage permissions error can
+-- no longer abort the table setup above. Run storage.sql after this file.
 
 -- ─── Verification ──────────────────────────────────────────────────────────
 -- Every one of these must report rls_enabled = true. If any says false, stop:

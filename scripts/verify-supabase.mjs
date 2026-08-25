@@ -96,13 +96,16 @@ async function api(path, init = {}) {
 }
 
 try {
-  const res = await fetch(`${url}/rest/v1/`, { headers });
+  // Probe with a real table read. The /rest/v1/ ROOT is service-role-only and
+  // always 401s for the anon key, so it is useless as a connectivity check.
+  const res = await fetch(`${url}/rest/v1/entries?select=id&limit=1`, { headers });
   if (res.status === 401) {
-    fail('rejected the API key (401)', 'wrong key, or it belongs to a different project');
+    const body = await res.json().catch(() => null);
+    fail('rejected the API key (401)', body?.message || 'wrong key, or a different project');
   } else if (res.ok || res.status === 404) {
-    pass('project is reachable');
+    pass('project is reachable', 'anon key accepted');
   } else {
-    warn(`unexpected status ${res.status} from the REST endpoint`);
+    warn(`unexpected status ${res.status} from the REST API`);
   }
 } catch (err) {
   fail('could not reach the project', err.message);
@@ -160,10 +163,17 @@ console.log('\nStorage (proof attachments)');
       pass('bucket is private', 'files are served only through short-lived signed URLs');
     }
   } else if (status === 400 || status === 404) {
-    fail(`bucket "${BUCKET}" not found`, 'the storage section of schema.sql did not run');
+    // Confirm by listing: an empty list proves the bucket is genuinely absent
+    // rather than merely unreadable by an anonymous caller.
+    const list = await api('/storage/v1/bucket');
+    if (Array.isArray(list.body)) {
+      const names = list.body.map((b) => b.id).join(', ') || 'none';
+      fail(`bucket "${BUCKET}" does not exist`, `buckets found: ${names} — run supabase/storage.sql`);
+    } else {
+      warn(`could not read bucket metadata (status ${status})`, 'check it by hand under Storage');
+    }
   } else {
-    // Some projects block anonymous bucket metadata reads — that is fine.
-    warn(`could not read bucket metadata (status ${status})`, 'check it by hand in Storage');
+    warn(`could not read bucket metadata (status ${status})`, 'check it by hand under Storage');
   }
 }
 
