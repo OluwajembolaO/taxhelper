@@ -23,37 +23,54 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Navigations: network first, falling back to the cached shell when offline.
-// Static assets: cache first (Vite fingerprints filenames, so they are immutable).
+// Cache-first for everything precached, so an offline start does not depend on
+// the network at all. Navigations fall back to the cached shell; anything not
+// precached is fetched and cached opportunistically.
+//
+// Every branch resolves — a rejected respondWith() promise makes the browser
+// fall through to the network, which is exactly what fails offline.
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
-
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('/index.html', copy));
-          return res;
-        })
-        .catch(() => caches.match('/index.html'))
-    );
-    return;
-  }
+  if (request.method !== 'GET') return;
+  if (new URL(request.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(request).then(
-      (hit) =>
-        hit ||
-        fetch(request).then((res) => {
-          if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(request, copy));
+    (async () => {
+      const cache = await caches.open(CACHE);
+
+      if (request.mode === 'navigate') {
+        // Try the network so a deployed update is picked up promptly, but never
+        // let a failure surface: fall back to the precached document.
+        try {
+          const fresh = await fetch(request);
+          if (fresh && fresh.ok) {
+            cache.put('/index.html', fresh.clone());
+            return fresh;
           }
-          return res;
-        })
-    )
+        } catch {
+          /* offline — fall through to the cache */
+        }
+        return (
+          (await cache.match('/index.html')) ||
+          (await cache.match('/')) ||
+          new Response('<h1>Offline</h1><p>Open TaxHelper once while online.</p>', {
+            status: 200,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          })
+        );
+      }
+
+      const hit = await cache.match(request, { ignoreVary: true });
+      if (hit) return hit;
+
+      try {
+        const res = await fetch(request);
+        if (res && res.ok && res.type === 'basic') cache.put(request, res.clone());
+        return res;
+      } catch {
+        return new Response('', { status: 504, statusText: 'Offline and not cached' });
+      }
+    })()
   );
 });
 

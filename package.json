@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/build-sw.mjs",
     "preview": "vite preview",
     "test": "node test/domain.test.mjs && node test/security.test.mjs",
     "verify": "node scripts/verify-supabase.mjs",
