@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import Account from './Account.jsx';
+import GetTheApp from './GetTheApp.jsx';
 import { useStore } from '../hooks/useStore.jsx';
 import { useNotifications } from '../hooks/useNotifications.js';
 import { describePeriod } from '../domain/payPeriods.js';
@@ -48,6 +49,8 @@ export default function Settings() {
   return (
     <div className="page page--settings">
       <Account />
+
+      <GetTheApp />
 
       <section className="card">
         <header className="card__head">

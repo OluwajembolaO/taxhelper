@@ -64,6 +64,26 @@ install prompt and the service worker both work.
 Updates arrive on their own: redeploy, and the next launch picks up the new
 build (the cache name is a content hash, so stale caches are dropped).
 
+The app carries its own **Get the app** card in Settings: a real Install button
+(via `beforeinstallprompt`) plus a download link for the Windows installer,
+which is hidden on non-Windows devices.
+
+### Publishing a new installer
+
+The `.exe` is ~109 MB — over GitHub's 100 MB file limit, so it cannot live in
+the repo or in Vercel's static output. It ships as a GitHub Release asset:
+
+```bash
+npm run dist
+cp "release/TaxHelper Setup 0.1.0.exe" release/TaxHelper-Setup.exe
+gh release create v0.1.1 release/TaxHelper-Setup.exe --title "TaxHelper 0.1.1" --notes "..."
+```
+
+Keep the asset named `TaxHelper-Setup.exe`: the site links to
+`/releases/latest/download/TaxHelper-Setup.exe`, which GitHub redirects to the
+newest release, so the download URL never has to change. Override it with
+`VITE_DOWNLOAD_URL` if you host the file elsewhere.
+
 ### A standalone Windows installer
 
 If you want a real `.exe` that does not depend on Chrome or Edge being
