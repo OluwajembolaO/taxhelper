@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#12312a"/>
+  <g stroke="#2a5c50" stroke-width="6">
+    <line x1="72" y1="200" x2="440" y2="200"/>
+    <line x1="72" y1="272" x2="440" y2="272"/>
+    <line x1="72" y1="344" x2="440" y2="344"/>
+  </g>
+  <text x="256" y="330" font-family="Georgia, 'Times New Roman', serif" font-size="250" font-weight="700"
+        fill="#f6f3ea" text-anchor="middle">T</text>
+  <rect x="150" y="128" width="212" height="10" rx="5" fill="#b4541f"/>
+</svg>

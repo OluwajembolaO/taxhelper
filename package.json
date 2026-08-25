@@ -1,0 +1,24 @@
+{
+  "name": "taxhelper",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node test/domain.test.mjs && node test/security.test.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.15.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.7"
+  },
+  "description": "Track gig hours, prove you were paid correctly, and estimate taxes owed.",
+  "license": "MIT"
+}
