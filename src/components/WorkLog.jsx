@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import OwedBanner from './OwedBanner.jsx';
 import ShiftForm from './ShiftForm.jsx';
 import ShiftList from './ShiftList.jsx';
-import HoursChart from './charts/HoursChart.jsx';
+import ChartFallback from './charts/ChartFallback.jsx';
 import { useStore } from '../hooks/useStore.jsx';
 import { byEmployer, reconcile } from '../domain/work.js';
 import { fmtMoney } from '../domain/tax.js';
+
+const HoursChart = lazy(() => import('./charts/HoursChart.jsx'));
 
 const GRACE_DAYS = 14;
 
@@ -85,7 +87,9 @@ export default function WorkLog() {
             onAddAttachment={addAttachment}
             onRemoveAttachment={removeAttachment}
           />
-          <HoursChart shifts={shifts} />
+          <Suspense fallback={<ChartFallback title="Owed vs. received, by week" />}>
+            <HoursChart shifts={shifts} />
+          </Suspense>
           <EmployerTable shifts={shifts} />
         </div>
       </div>

@@ -275,3 +275,10 @@ code {
   background: var(--paper-sunken); border: 1px solid var(--rule);
   border-radius: 4px; padding: 0.05em 0.35em;
 }
+.chart__skeleton {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--paper-sunken) 25%, var(--rule) 50%, var(--paper-sunken) 75%);
+  background-size: 300% 100%;
+  animation: chart-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes chart-shimmer { to { background-position: -300% 0; } }

@@ -1,13 +1,17 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import SummaryCards from './SummaryCards.jsx';
 import ReserveProgress from './ReserveProgress.jsx';
 import PayPeriodCard from './PayPeriodCard.jsx';
-import IncomeOverTime from './charts/IncomeOverTime.jsx';
-import IncomeVsExpenses from './charts/IncomeVsExpenses.jsx';
-import CategoryBreakdown from './charts/CategoryBreakdown.jsx';
+import ChartFallback from './charts/ChartFallback.jsx';
 import { useStore } from '../hooks/useStore.jsx';
 import { reserveStatus, fmtMoney } from '../domain/tax.js';
 import { reconcile } from '../domain/work.js';
+
+// Charts are the heaviest dependency in the app and sit below the fold on
+// mobile — load them after the numbers that matter are already on screen.
+const IncomeOverTime = lazy(() => import('./charts/IncomeOverTime.jsx'));
+const IncomeVsExpenses = lazy(() => import('./charts/IncomeVsExpenses.jsx'));
+const CategoryBreakdown = lazy(() => import('./charts/CategoryBreakdown.jsx'));
 
 export default function Dashboard({ onGoToWork }) {
   const { entries, shifts, settings, updateSettings } = useStore();
@@ -44,11 +48,17 @@ export default function Dashboard({ onGoToWork }) {
         />
       </div>
 
-      <IncomeOverTime entries={entries} />
+      <Suspense fallback={<ChartFallback title="Net position over time" />}>
+        <IncomeOverTime entries={entries} />
+      </Suspense>
 
       <div className="grid grid--2">
-        <IncomeVsExpenses entries={entries} />
-        <CategoryBreakdown entries={entries} />
+        <Suspense fallback={<ChartFallback title="Income vs. expenses by month" />}>
+          <IncomeVsExpenses entries={entries} />
+        </Suspense>
+        <Suspense fallback={<ChartFallback title="Where it goes" />}>
+          <CategoryBreakdown entries={entries} />
+        </Suspense>
       </div>
     </div>
   );
