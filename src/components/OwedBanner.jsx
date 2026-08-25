@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { fmtMoney } from '../domain/tax.js';
+import { fmtMoney, plural } from '../domain/tax.js';
 import { disputeSummary, realizedRate, shiftsToCsv } from '../domain/work.js';
 
 function download(name, text, mime = 'text/plain') {
@@ -39,8 +39,8 @@ export default function OwedBanner({ recon }) {
         <p className="owedbanner__value num">{fmtMoney(recon.atRisk)}</p>
         <p className="owedbanner__sub">
           {clean
-            ? `${recon.rows.length} shift(s) logged, every one paid in full.`
-            : `${problems.length} shift(s) unpaid or short of what you logged.`}
+            ? `${plural(recon.rows.length, 'shift')} logged, every one paid in full.`
+            : `${plural(problems.length, 'shift')} unpaid or short of what you logged.`}
         </p>
       </div>
 

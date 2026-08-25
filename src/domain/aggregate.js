@@ -3,11 +3,11 @@ import { parseDate } from './payPeriods.js';
 
 const monthKey = (iso) => String(iso).slice(0, 7); // YYYY-MM
 
+// "Jul 26" reads as the 26th of July. An apostrophe makes the year unambiguous.
 const monthLabel = (key) => {
   const [y, m] = key.split('-').map(Number);
-  return new Intl.DateTimeFormat(undefined, { month: 'short', year: '2-digit' }).format(
-    new Date(y, m - 1, 1)
-  );
+  const month = new Intl.DateTimeFormat(undefined, { month: 'short' }).format(new Date(y, m - 1, 1));
+  return `${month} ’${String(y).slice(2)}`;
 };
 
 /** Continuous month series (gaps filled with zeros) of income / expenses / net. */

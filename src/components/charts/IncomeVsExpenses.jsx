@@ -5,6 +5,8 @@ import { fmtCompact, fmtMoney } from '../../domain/tax.js';
 
 export default function IncomeVsExpenses({ entries }) {
   const data = byMonth(entries);
+  // With only a month or two on screen, 26px bars read as stray ticks.
+  const barSize = data.length <= 3 ? 56 : data.length <= 6 ? 36 : 26;
   return (
     <ChartFrame
       title="Income vs. expenses by month"
@@ -17,8 +19,8 @@ export default function IncomeVsExpenses({ entries }) {
         <XAxis dataKey="label" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} tickLine={false} axisLine={{ stroke: 'var(--grid)' }} />
         <YAxis tickFormatter={fmtCompact} tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontFamily: 'var(--font-mono)' }} tickLine={false} axisLine={false} width={52} />
         <Tooltip content={<MoneyTooltip fmt={fmtMoney} />} cursor={{ fill: 'var(--paper-sunken)' }} />
-        <Bar dataKey="income" name="Income" fill="var(--series-1)" radius={[4, 4, 0, 0]} maxBarSize={26} />
-        <Bar dataKey="expenses" name="Expenses" fill="var(--series-2)" radius={[4, 4, 0, 0]} maxBarSize={26} />
+        <Bar dataKey="income" name="Income" fill="var(--series-1)" radius={[4, 4, 0, 0]} maxBarSize={barSize} />
+        <Bar dataKey="expenses" name="Expenses" fill="var(--series-2)" radius={[4, 4, 0, 0]} maxBarSize={barSize} />
       </BarChart>
     </ChartFrame>
   );

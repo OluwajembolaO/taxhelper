@@ -119,7 +119,7 @@ export default function ShiftForm({ onSave, editing, onCancelEdit, defaults }) {
           <input id="s-role" placeholder="e.g. Event setup" value={form.role} onChange={set('role')} />
         </div>
 
-        <div className="form__row form__row--3">
+        <div className="form__row">
           <div className="field">
             <label htmlFor="s-start">Clock in</label>
             <input id="s-start" type="time" value={form.startTime} onChange={set('startTime')} />
@@ -128,8 +128,11 @@ export default function ShiftForm({ onSave, editing, onCancelEdit, defaults }) {
             <label htmlFor="s-end">Clock out</label>
             <input id="s-end" type="time" value={form.endTime} onChange={set('endTime')} />
           </div>
+        </div>
+
+        <div className="form__row">
           <div className="field">
-            <label htmlFor="s-break">Break (min)</label>
+            <label htmlFor="s-break">Break (minutes)</label>
             <input
               id="s-break"
               type="number"
@@ -142,9 +145,6 @@ export default function ShiftForm({ onSave, editing, onCancelEdit, defaults }) {
               onChange={set('breakMins')}
             />
           </div>
-        </div>
-
-        <div className="form__row">
           <div className="field">
             <label htmlFor="s-hours">Hours</label>
             <input
@@ -162,41 +162,42 @@ export default function ShiftForm({ onSave, editing, onCancelEdit, defaults }) {
             />
             {derivedHours != null && (
               <p className="field__hint" id="s-hours-hint">
-                Calculated from your clock times.
+                From your clock times.
               </p>
             )}
           </div>
-          <div className="field">
-            <label htmlFor={flat ? 's-flat' : 's-rate'}>{flat ? 'Agreed fee' : 'Rate per hour'}</label>
-            {flat ? (
-              <input
-                id="s-flat"
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.01"
-                className="num"
-                placeholder="0.00"
-                value={form.flatAmount}
-                onChange={set('flatAmount')}
-              />
-            ) : (
-              <input
-                id="s-rate"
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.01"
-                className="num"
-                placeholder="0.00"
-                value={form.rate}
-                onChange={set('rate')}
-              />
-            )}
-            <button type="button" className="ghost linkish" onClick={() => setFlat((v) => !v)}>
-              {flat ? 'Use an hourly rate instead' : 'This gig pays a flat fee'}
-            </button>
-          </div>
+        </div>
+
+        <div className="field">
+          <label htmlFor={flat ? 's-flat' : 's-rate'}>{flat ? 'Agreed fee' : 'Rate per hour'}</label>
+          {flat ? (
+            <input
+              id="s-flat"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
+              className="num"
+              placeholder="0.00"
+              value={form.flatAmount}
+              onChange={set('flatAmount')}
+            />
+          ) : (
+            <input
+              id="s-rate"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
+              className="num"
+              placeholder="0.00"
+              value={form.rate}
+              onChange={set('rate')}
+            />
+          )}
+          <button type="button" className="ghost linkish" onClick={() => setFlat((v) => !v)}>
+            {flat ? 'Use an hourly rate instead' : 'This gig pays a flat fee'}
+          </button>
         </div>
 
         <p className="owed">

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { passwordProblem, useAuth } from '../hooks/useAuth.jsx';
+import { plural } from '../domain/tax.js';
 
 function relativeTime(iso) {
   if (!iso) return 'never';
@@ -21,7 +22,7 @@ function SignedIn() {
           <p className="account__email">{user.email}</p>
           <p className="field__hint">
             Synced {relativeTime(syncState.at)}
-            {syncState.pending > 0 && ` · ${syncState.pending} change(s) waiting to upload`}
+            {syncState.pending > 0 && ` · ${plural(syncState.pending, 'change')} waiting to upload`}
           </p>
         </div>
         <span className={`pill pill--${tone}`}>

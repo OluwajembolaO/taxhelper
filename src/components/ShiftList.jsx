@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import Attachments from './Attachments.jsx';
-import { fmtMoney } from '../domain/tax.js';
+import { fmtMoney, plural } from '../domain/tax.js';
 import { fmtDate, parseDate } from '../domain/payPeriods.js';
 import { STATUS_META, shiftDiff, shiftStatus } from '../domain/work.js';
 
@@ -120,7 +120,7 @@ function ShiftRow({ shift, graceDays, onEdit, onDelete, onSave, onAddAttachment,
         </span>
 
         {shift.attachments?.length > 0 && (
-          <span className="shift__clip" title={`${shift.attachments.length} attachment(s)`}>
+          <span className="shift__clip" title={plural(shift.attachments.length, "attachment")}>
             📎<span className="num">{shift.attachments.length}</span>
           </span>
         )}

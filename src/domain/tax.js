@@ -31,5 +31,8 @@ export const fmtMoney = (n, currency = 'USD') =>
     maximumFractionDigits: 2,
   }).format(Number.isFinite(n) ? n : 0);
 
+/** "1 shift" / "2 shifts" — never "shift(s)". */
+export const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
+
 export const fmtCompact = (n) =>
   new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(n || 0);

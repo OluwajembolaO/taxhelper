@@ -4,7 +4,7 @@ import ReserveProgress from './ReserveProgress.jsx';
 import PayPeriodCard from './PayPeriodCard.jsx';
 import ChartFallback from './charts/ChartFallback.jsx';
 import { useStore } from '../hooks/useStore.jsx';
-import { reserveStatus, fmtMoney } from '../domain/tax.js';
+import { reserveStatus, fmtMoney, plural } from '../domain/tax.js';
 import { reconcile } from '../domain/work.js';
 
 // Charts are the heaviest dependency in the app and sit below the fold on
@@ -29,7 +29,7 @@ export default function Dashboard({ onGoToWork }) {
           <span className="alertbar__dot" aria-hidden="true" />
           <span>
             <strong className="num">{fmtMoney(recon.atRisk)}</strong> is unpaid or short across{' '}
-            {recon.problemRows.length} shift(s).
+            {plural(recon.problemRows.length, 'shift')}.
           </span>
           <span className="alertbar__cta">Review →</span>
         </button>

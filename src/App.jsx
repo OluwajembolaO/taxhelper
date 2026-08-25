@@ -8,6 +8,7 @@ import { useStore } from './hooks/useStore.jsx';
 import { useNotifications } from './hooks/useNotifications.js';
 import { useAuth } from './hooks/useAuth.jsx';
 import { reconcile } from './domain/work.js';
+import { plural } from './domain/tax.js';
 
 const TABS = [
   ['dashboard', 'Dashboard'],
@@ -149,7 +150,7 @@ export default function App() {
             >
               {label}
               {id === 'work' && problems > 0 && (
-                <span className="tabs__badge num" title={`${problems} shift(s) need chasing`}>
+                <span className="tabs__badge num" title={`${plural(problems, "shift")} need chasing`}>
                   {problems}
                 </span>
               )}
