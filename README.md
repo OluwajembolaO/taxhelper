@@ -45,6 +45,30 @@ pay date, and mark each period received (short payments are flagged there too).
 **Reminders.** Browser notifications before payday, when a payment is late, and
 when the tax reserve falls behind. Installable as a PWA and works offline.
 
+## Installing it as an app
+
+TaxHelper is a PWA, so it installs as a real application on every platform —
+no store, no installer, no cost. It runs in its own window, gets a proper icon,
+and **works fully offline** (the whole app is precached at build time).
+
+| Platform | How |
+|---|---|
+| **Windows / macOS desktop** | Open in Chrome or Edge → install icon in the address bar (a monitor with ↓), or ⋮ → *Cast, save, and share* → *Install page as app*. You get a Start-menu / Applications entry and a pinnable taskbar or dock icon. |
+| **Android** | Chrome → ⋮ → *Add to Home screen*. Gets an app icon, its own window, and notifications. |
+| **iPhone / iPad** | Safari → Share → *Add to Home Screen*. Required for notifications to work at all on iOS — an Apple restriction, not a limitation here. |
+
+You can try it before deploying: `npm run build && npm run preview` and install
+from `http://127.0.0.1:4173`. Localhost counts as a secure context, so the
+install prompt and the service worker both work.
+
+Updates arrive on their own: redeploy, and the next launch picks up the new
+build (the cache name is a content hash, so stale caches are dropped).
+
+A packaged `.exe` / `.msi` is possible too — Tauri would produce roughly a 5 MB
+installer using the WebView2 runtime Windows already ships — but it needs the
+Rust toolchain and has to be rebuilt by hand for every update. The PWA install
+is the same app with none of that overhead.
+
 ## Architecture
 
 ```
