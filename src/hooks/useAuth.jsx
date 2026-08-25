@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { supabase, syncConfigured } from '../data/supabase.js';
+import { supabase, syncConfigured, siteUrl } from '../data/supabase.js';
 import { adoptLocalData, resetSyncState, syncNow } from '../data/sync.js';
 
 const AuthContext = createContext(null);
@@ -16,6 +16,9 @@ export function AuthProvider({ children, onSynced }) {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(!syncConfigured);
   const [syncState, setSyncState] = useState({ status: 'idle', at: null, pending: 0, error: null });
+  // Set when the user arrives via a password-reset link, so the UI can offer a
+  // "choose a new password" form instead of dropping them on the dashboard.
+  const [recovering, setRecovering] = useState(false);
   const onSyncedRef = useRef(onSynced);
   onSyncedRef.current = onSynced;
 
@@ -25,9 +28,16 @@ export function AuthProvider({ children, onSynced }) {
       setUser(data.session?.user ?? null);
       setReady(true);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (event === 'PASSWORD_RECOVERY') setRecovering(true);
     });
+
+    // A recovery link may be consumed before the listener attaches, so also
+    // check the URL fragment Supabase puts the token in.
+    if (/type=recovery/.test(window.location.hash) || /type=recovery/.test(window.location.search)) {
+      setRecovering(true);
+    }
     return () => sub.subscription.unsubscribe();
   }, []);
 
@@ -82,10 +92,40 @@ export function AuthProvider({ children, onSynced }) {
   }, [runSync]);
 
   const resetPassword = useCallback(async (email) => {
+    // Reset links open in a real browser, so they must point at an https URL
+    // Supabase allows. `app://taxhelper` is not one — see supabase.js.
+    if (!siteUrl) {
+      return {
+        error:
+          'Password reset has to be done on the website, not in the desktop app. ' +
+          'Open the site in your browser and use "Forgot your password?" there, ' +
+          'then sign in here with the new password.',
+      };
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/`,
+      redirectTo: `${siteUrl}/`,
     });
-    return error ? { error: error.message } : { message: 'Password reset email sent.' };
+    return error
+      ? { error: error.message }
+      : {
+          message:
+            'Password reset email sent. The link expires in an hour and only works once — ' +
+            'open it in the same browser if you can.',
+        };
+  }, []);
+
+  /** Completes a reset: called once the user is back with a recovery session. */
+  const updatePassword = useCallback(async (password) => {
+    const problem = passwordProblem(password);
+    if (problem) return { error: problem };
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) return { error: error.message };
+    setRecovering(false);
+    // Strip the recovery token out of the address bar.
+    if (window.history?.replaceState) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    return { message: 'Password updated. You are signed in.' };
   }, []);
 
   const signOut = useCallback(async () => {
@@ -98,8 +138,20 @@ export function AuthProvider({ children, onSynced }) {
   }, [runSync]);
 
   const value = useMemo(
-    () => ({ user, ready, syncConfigured, syncState, signIn, signUp, signOut, resetPassword, runSync }),
-    [user, ready, syncState, signIn, signUp, signOut, resetPassword, runSync]
+    () => ({
+      user,
+      ready,
+      syncConfigured,
+      syncState,
+      recovering,
+      signIn,
+      signUp,
+      signOut,
+      resetPassword,
+      updatePassword,
+      runSync,
+    }),
+    [user, ready, syncState, recovering, signIn, signUp, signOut, resetPassword, updatePassword, runSync]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

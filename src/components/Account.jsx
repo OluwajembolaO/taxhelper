@@ -11,6 +11,57 @@ function relativeTime(iso) {
   return new Date(iso).toLocaleDateString();
 }
 
+/** Shown when the user arrives from a password-reset link. */
+function SetNewPassword() {
+  const { updatePassword } = useAuth();
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const hint = password ? passwordProblem(password) : null;
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setBusy(true);
+    const result = await updatePassword(password);
+    setBusy(false);
+    if (result.error) setError(result.error);
+    setPassword('');
+  };
+
+  return (
+    <div className="card__body form">
+      <p className="field__hint">
+        You followed a password-reset link. Choose a new password to finish — this link only works once.
+      </p>
+      <form className="form" onSubmit={submit}>
+        <div className="field">
+          <label htmlFor="new-password">New password</label>
+          <input
+            id="new-password"
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={10}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoFocus
+          />
+          <p className="field__hint">{hint || 'At least 10 characters.'}</p>
+        </div>
+        {error && (
+          <p className="form__error" role="alert">
+            {error}
+          </p>
+        )}
+        <button type="submit" className="primary form__submit" disabled={busy}>
+          {busy ? 'Saving…' : 'Set new password'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 function SignedIn() {
   const { user, syncState, signOut, runSync } = useAuth();
   const tone = { ok: 'good', syncing: 'mute', error: 'bad', idle: 'mute' }[syncState.status];
@@ -169,7 +220,7 @@ function SignedOut() {
 }
 
 export default function Account() {
-  const { user, ready, syncConfigured } = useAuth();
+  const { user, ready, syncConfigured, recovering } = useAuth();
 
   if (!syncConfigured) {
     return (
@@ -197,11 +248,25 @@ export default function Account() {
       <header className="card__head">
         <div>
           <h3 className="card__title">Account</h3>
-          <p className="card__hint">{user ? 'Signed in — syncing across your devices' : 'Sign in to sync'}</p>
+          <p className="card__hint">
+            {recovering
+              ? 'Finish resetting your password'
+              : user
+                ? 'Signed in — syncing across your devices'
+                : 'Sign in to sync'}
+          </p>
         </div>
         <span className={`pill pill--${user ? 'good' : 'mute'}`}>{user ? 'Synced' : 'Local only'}</span>
       </header>
-      {!ready ? <p className="empty">Checking your session…</p> : user ? <SignedIn /> : <SignedOut />}
+      {!ready ? (
+        <p className="empty">Checking your session…</p>
+      ) : recovering ? (
+        <SetNewPassword />
+      ) : user ? (
+        <SignedIn />
+      ) : (
+        <SignedOut />
+      )}
     </section>
   );
 }

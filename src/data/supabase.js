@@ -40,6 +40,27 @@ if (import.meta.env.DEV && url && !/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)$/i.
   );
 }
 
+/**
+ * The canonical https origin for auth redirects (password reset, email
+ * confirmation).
+ *
+ * This CANNOT just be window.location.origin. In the desktop build the page is
+ * served from `app://taxhelper`, which Supabase will not accept as a redirect
+ * target — it silently falls back to the project's Site URL, which is why a
+ * reset link from the desktop app lands on localhost:3000. Emails are opened in
+ * a normal browser anyway, so the reset has to complete on the web app.
+ *
+ * Set VITE_SITE_URL to the deployed URL; it is baked in at build time.
+ */
+export const siteUrl = (() => {
+  const configured = (import.meta.env.VITE_SITE_URL || '').trim().replace(/\/+$/, '');
+  if (configured) return configured;
+  if (typeof window !== 'undefined' && /^https?:$/.test(window.location.protocol)) {
+    return window.location.origin;
+  }
+  return ''; // desktop build with no VITE_SITE_URL — callers must handle this
+})();
+
 export const supabase = syncConfigured
   ? createClient(url, anonKey, {
       auth: {
