@@ -64,10 +64,44 @@ install prompt and the service worker both work.
 Updates arrive on their own: redeploy, and the next launch picks up the new
 build (the cache name is a content hash, so stale caches are dropped).
 
-A packaged `.exe` / `.msi` is possible too — Tauri would produce roughly a 5 MB
-installer using the WebView2 runtime Windows already ships — but it needs the
-Rust toolchain and has to be rebuilt by hand for every update. The PWA install
-is the same app with none of that overhead.
+### A standalone Windows installer
+
+If you want a real `.exe` that does not depend on Chrome or Edge being
+installed:
+
+```bash
+npm run dist        # -> release/TaxHelper Setup 0.1.0.exe  (~109 MB)
+npm run electron    # run the desktop build without packaging it
+```
+
+It installs per-user, so no admin prompt, and creates desktop and Start-menu
+shortcuts. The renderer is the exact same app as the web build, served over a
+custom `app://` scheme rather than `file://` — `file://` is an opaque origin,
+which makes IndexedDB and localStorage unreliable, and the entire work log
+lives in IndexedDB.
+
+Two things to know:
+
+- **It is unsigned.** SmartScreen will say "Windows protected your PC" on first
+  run: *More info -> Run anyway*. A code-signing certificate costs money.
+- **It does not auto-update.** Rebuild and reinstall to pick up changes. The
+  PWA install updates itself, which is why it is the default recommendation.
+
+Tauri would produce a ~5 MB installer instead of ~109 MB, since it uses the
+WebView2 runtime Windows already ships. It is not used here because it needs
+the Rust toolchain plus the Visual Studio C++ workload and Windows SDK — about
+4-6 GB of build tools, and the VS installer wants admin.
+
+Two environment quirks the build scripts handle for you, both of which cost
+real debugging time:
+
+- VS Code's terminal exports `ELECTRON_RUN_AS_NODE=1`, which makes
+  `electron.exe` run as plain Node with every Electron API undefined. It has to
+  be *deleted* from the environment; setting it to `''` is not enough.
+- Windows Defender holds a lock on Electron's freshly extracted binaries while
+  it scans them, and electron-builder renames the staging directory
+  immediately, failing with `EPERM`. The build stages in `%TEMP%` and copies
+  only the finished installer back.
 
 ## Architecture
 

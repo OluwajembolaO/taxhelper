@@ -1,0 +1,32 @@
+appId: style.taxhelper.app
+productName: TaxHelper
+copyright: TaxHelper
+
+directories:
+  output: release
+  buildResources: build
+
+# Only what the app actually needs at runtime — never node_modules or src.
+files:
+  - dist/**/*
+  - electron/**/*
+
+# The service worker is pointless here (the protocol handler already serves
+# everything from disk) but harmless, and keeping one build output means the
+# desktop and web apps cannot drift apart.
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  perMachine: false            # installs per-user, so no admin prompt
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: TaxHelper
+
+# Nothing is code-signed: signing certificates cost money and this is a
+# personal build. Windows SmartScreen will warn on first run — see README.

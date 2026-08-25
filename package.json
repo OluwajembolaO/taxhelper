@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "test": "node test/domain.test.mjs && node test/security.test.mjs",
     "verify": "node scripts/verify-supabase.mjs",
-    "shots": "node scripts/screenshots.mjs"
+    "shots": "node scripts/screenshots.mjs",
+    "electron": "npm run build && node scripts/run-desktop.mjs",
+    "dist": "npm run build && node scripts/build-desktop.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
@@ -19,9 +21,13 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^44.0.0",
+    "electron-builder": "^26.15.3",
     "playwright": "^1.62.1",
     "vite": "^6.0.7"
   },
   "description": "Track gig hours, prove you were paid correctly, and estimate taxes owed.",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "electron/main.js",
+  "author": "OluwajembolaO"
 }
