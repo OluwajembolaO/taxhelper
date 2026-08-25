@@ -152,28 +152,29 @@ for (const table of TABLES) {
 }
 
 // ─── 5. storage bucket ─────────────────────────────────────────────────────
+// Caveat: a PRIVATE bucket is meant to be invisible to anonymous callers, and
+// Supabase returns "NoSuchBucket" rather than "forbidden" so it does not leak
+// which buckets exist. From out here, "correctly hidden" and "never created"
+// look identical — so this section can confirm success but never prove failure.
 console.log('\nStorage (proof attachments)');
 {
   const { status, body } = await api(`/storage/v1/bucket/${BUCKET}`);
   if (status === 200 && body) {
     pass(`bucket "${BUCKET}" exists`);
     if (body.public === true) {
-      fail('bucket is PUBLIC', 'anyone with a URL could read your pay stubs — re-run schema.sql');
+      fail('bucket is PUBLIC', 'anyone with a URL could read your pay stubs — re-run storage.sql');
     } else {
       pass('bucket is private', 'files are served only through short-lived signed URLs');
     }
-  } else if (status === 400 || status === 404) {
-    // Confirm by listing: an empty list proves the bucket is genuinely absent
-    // rather than merely unreadable by an anonymous caller.
-    const list = await api('/storage/v1/bucket');
-    if (Array.isArray(list.body)) {
-      const names = list.body.map((b) => b.id).join(', ') || 'none';
-      fail(`bucket "${BUCKET}" does not exist`, `buckets found: ${names} — run supabase/storage.sql`);
-    } else {
-      warn(`could not read bucket metadata (status ${status})`, 'check it by hand under Storage');
-    }
   } else {
-    warn(`could not read bucket metadata (status ${status})`, 'check it by hand under Storage');
+    warn(
+      `cannot see bucket "${BUCKET}" from outside`,
+      'expected for a private bucket — confirm it in the Dashboard under Storage'
+    );
+    console.log('        To check from inside, run this in the SQL Editor:');
+    console.log("          select id, public from storage.buckets where id = 'proof';");
+    console.log('        One row with public = false means you are set.');
+    console.log('        No rows means the bucket half of storage.sql did not run.');
   }
 }
 
